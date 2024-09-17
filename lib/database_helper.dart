@@ -1,4 +1,5 @@
 import 'package:dolt_flutter_example/models/dolt_branch.dart';
+import 'package:dolt_flutter_example/models/dolt_log.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class DatabaseHelper {
@@ -56,7 +57,6 @@ class DatabaseHelper {
   Future<void> deleteBranch(String name) async {
     final conn = await connection;
     try {
-      // Remove the Note from the database.
       await conn.execute('CALL DOLT_BRANCH("-d", "$name")');
     } catch (err) {
       print("Something went wrong when deleting a branch: $err");
@@ -67,11 +67,23 @@ class DatabaseHelper {
   Future<void> createBranch(String name, String fromName) async {
     final conn = await connection;
     try {
-      // Remove the Note from the database.
       await conn.execute('CALL DOLT_BRANCH("$name", "$fromName")');
     } catch (err) {
       print("Something went wrong when creating a branch: $err");
     }
+  }
+
+  Future<List<LogModel>> getPullLogs(String fromBranch, String toBranch) async {
+    final conn = await connection;
+    final result =
+        await conn.execute('SELECT * FROM DOLT_LOG("$toBranch..$fromBranch")');
+    return result.rows.map((json) => LogModel.fromJson(json.assoc())).toList();
+  }
+
+  Future<void> mergeBranches(String fromBranch, String toBranch) async {
+    final conn = await connection;
+    await conn.execute('CALL DOLT_CHECKOUT("$toBranch")');
+    await conn.execute('CALL DOLT_MERGE("$fromBranch")');
   }
 
   Future close() async {
