@@ -23,11 +23,22 @@ class _PullViewState extends State<PullView> {
   void initState() {
     if (widget.branches.isNotEmpty) {
       setState(() {
-        dropdownValue = widget.branches.first.name;
+        // dropdownValue is either main if it exists or first branch in list
+        dropdownValue = widget.branches
+            .firstWhere((branch) => branch.name == "main",
+                orElse: () => widget.branches.first)
+            .name;
       });
-      getLogs(widget.branches.first.name);
+      getLogs(dropdownValue);
       super.initState();
     }
+  }
+
+  handleError(dynamic error, String action) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Failed to $action: $error"),
+      backgroundColor: const Color.fromARGB(255, 235, 108, 108),
+    ));
   }
 
   getLogs(String? toBranch) {
@@ -38,6 +49,8 @@ class _PullViewState extends State<PullView> {
       setState(() {
         logs = value;
       });
+    }).catchError((error) {
+      handleError(error, "get logs");
     });
   }
 
@@ -48,9 +61,11 @@ class _PullViewState extends State<PullView> {
           content: Text('Pull request merged successfully'),
         ),
       );
+      // Route back to home page
+      Navigator.pop(context);
+    }).catchError((error) {
+      handleError(error, "merge branches");
     });
-    // Route back to home page
-    Navigator.pop(context);
   }
 
   @override
@@ -68,35 +83,52 @@ class _PullViewState extends State<PullView> {
               const Text(
                 'Choose branches to view the pull request',
               ),
-              Text(
-                'From branch: ${widget.fromBranch}',
+              const SizedBox(
+                height: 20,
               ),
-              const Text(
-                'To branch:',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 20.0),
+                    child: Text(
+                      'Base branch:',
+                    ),
+                  ),
+                  DropdownMenu<String>(
+                    textStyle: const TextStyle(fontSize: 14),
+                    initialSelection: dropdownValue,
+                    onSelected: (String? value) {
+                      setState(() {
+                        dropdownValue = value!;
+                      });
+                      getLogs(value);
+                    },
+                    dropdownMenuEntries: widget.branches
+                        .map<DropdownMenuEntry<String>>((BranchModel value) {
+                      return DropdownMenuEntry<String>(
+                        value: value.name,
+                        label: value.name,
+                      );
+                    }).toList(),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(right: 40.0, left: 40.0),
+                    child: Icon(
+                      Icons.arrow_back,
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(right: 20.0),
+                    child: Text(
+                      'From branch:',
+                    ),
+                  ),
+                  Text(widget.fromBranch),
+                ],
               ),
-              DropdownButton<String>(
-                value: dropdownValue,
-                icon: const Icon(Icons.arrow_downward),
-                elevation: 16,
-                style: const TextStyle(color: Colors.deepPurple),
-                underline: Container(
-                  height: 2,
-                  color: Colors.deepPurpleAccent,
-                ),
-                onChanged: (String? value) {
-                  // This is called when the user selects an item.
-                  setState(() {
-                    dropdownValue = value!;
-                  });
-                  getLogs(value);
-                },
-                items: widget.branches
-                    .map<DropdownMenuItem<String>>((BranchModel value) {
-                  return DropdownMenuItem<String>(
-                    value: value.name,
-                    child: Text(value.name),
-                  );
-                }).toList(),
+              const SizedBox(
+                height: 30,
               ),
               ElevatedButton(
                 style: ButtonStyle(
@@ -105,21 +137,26 @@ class _PullViewState extends State<PullView> {
                 onPressed: mergePull,
                 child: const Text('Merge branch'),
               ),
+              const SizedBox(
+                height: 30,
+              ),
               Container(
                 child: logs.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.only(top: 50.0),
-                        child: Text(
-                          "No logs found",
-                          style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14,
-                          ),
+                    ? const Text(
+                        "No differences found between branches",
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
                         ),
                       )
                     : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Logs:"),
+                          const Text("Pull request logs:",
+                              style: TextStyle(fontSize: 16)),
+                          const SizedBox(
+                            height: 10,
+                          ),
                           ...logs.map((log) {
                             return buildLogCard(log);
                           }),
@@ -138,7 +175,7 @@ class _PullViewState extends State<PullView> {
         onTap: () => {},
         child: ListTile(
           leading: const Icon(
-            Icons.note,
+            Icons.commit,
             color: Color.fromARGB(255, 28, 3, 15),
           ),
           title: Text(log.hash),
@@ -151,24 +188,6 @@ class _PullViewState extends State<PullView> {
               ],
             ),
           ),
-          // trailing: Wrap(
-          //   children: [
-          //     IconButton(
-          //       onPressed: () => goToPullView(branch.name),
-          //       icon: const Icon(
-          //         Icons.arrow_forward,
-          //         color: Color.fromARGB(255, 41, 227, 193),
-          //       ),
-          //     ),
-          //     IconButton(
-          //       onPressed: () => deleteBranchDialog(branch.name),
-          //       icon: const Icon(
-          //         Icons.delete,
-          //         color: Color.fromARGB(255, 255, 81, 0),
-          //       ),
-          //     ),
-          //   ],
-          // ),
         ),
       ),
     );

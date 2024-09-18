@@ -16,6 +16,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Create an instance of the database helper
   DatabaseHelper db = DatabaseHelper.instance;
   List<BranchModel> branches = [];
+  String databaseName = '';
 
   // State for create branch form
   final formKey = GlobalKey<FormState>();
@@ -25,6 +26,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    setState(() {
+      databaseName = db.getDatabaseName();
+    });
     refreshBranches();
     super.initState();
   }
@@ -56,7 +60,23 @@ class _MyHomePageState extends State<MyHomePage> {
     refreshBranches();
   }
 
-  // Create a new branch
+  // Show snack bar with error details
+  handleError(dynamic error, String action) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Failed to $action: $error"),
+      backgroundColor: const Color.fromARGB(255, 235, 108, 108),
+    ));
+  }
+
+  // Show snack bar with success details
+  handleSuccess(String action) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("$action successfully"),
+      backgroundColor: const Color.fromARGB(255, 4, 160, 74),
+    ));
+  }
+
+  // Create a new branch in the database
   createBranch() async {
     setState(() {
       isLoading = true;
@@ -67,19 +87,13 @@ class _MyHomePageState extends State<MyHomePage> {
       db
           .createBranch(newBranchController.text, fromBranchController.text)
           .then((respond) async {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Branch successfully added."),
-          backgroundColor: Color.fromARGB(255, 4, 160, 74),
-        ));
+        handleSuccess("Branch added");
         Navigator.pop(context, {
           'reload': true,
         });
         refreshBranches();
       }).catchError((error) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Failed to create branch."),
-          backgroundColor: Color.fromARGB(255, 235, 108, 108),
-        ));
+        handleError(error, "create branch");
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -101,21 +115,15 @@ class _MyHomePageState extends State<MyHomePage> {
     return null;
   }
 
-  // Delete a branch
+  // Delete a branch from the database
   deleteBranch(String name) async {
     db.deleteBranch(name).then((respond) async {
       Navigator.pop(context);
       setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Branch successfully deleted."),
-        backgroundColor: Color.fromARGB(255, 235, 108, 108),
-      ));
+      handleSuccess("Branch deleted");
       refreshBranches();
     }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Failed to delete branch."),
-        backgroundColor: Color.fromARGB(255, 235, 108, 108),
-      ));
+      handleError(error, "delete branch");
     });
   }
 
@@ -155,7 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  // Create a dialog for creating a new branch
+  // Create a dialog with the new branch form
   createBranchDialog({int? id}) async {
     showDialog(
         context: context,
@@ -223,9 +231,17 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Text(
-              'Dolt Branches',
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20.0, top: 20.0),
+              child: Text(
+                'Dolt Branches in $databaseName',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
             Container(
               child: branches.isEmpty
@@ -266,7 +282,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: () => {},
         child: ListTile(
           leading: const Icon(
-            Icons.note,
+            Icons.account_tree_outlined,
             color: Color.fromARGB(255, 28, 3, 15),
           ),
           title: Text(branch.name),
@@ -285,10 +301,9 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               IconButton(
                 onPressed: () => goToPullView(branch.name),
-                icon: const Icon(
-                  Icons.arrow_forward,
-                  color: Color.fromARGB(255, 41, 227, 193),
-                ),
+                icon: const Icon(Icons.arrow_forward,
+                    color: Color.fromARGB(255, 41, 227, 193)),
+                tooltip: "See pull request",
               ),
               IconButton(
                 onPressed: () => deleteBranchDialog(branch.name),
@@ -296,6 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Icons.delete,
                   color: Color.fromARGB(255, 255, 81, 0),
                 ),
+                tooltip: "Delete branch",
               ),
             ],
           ),
