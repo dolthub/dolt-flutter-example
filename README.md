@@ -1,10 +1,13 @@
 # dolt_flutter_example
 
-A new Flutter project.
+An example Flutter application that connects to a [Dolt](https://www.doltdb.com) database.
+Includes branch and pull request workflows.
+
+Learn more about this application in [this blog](https://www.dolthub.com/blog/2024-09-20-flutter-and-dolt).
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project is a starting point for a Flutter - Dolt application.
 
 A few resources to get you started if this is your first Flutter project:
 
@@ -14,3 +17,22 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Connecting to Dolt
+
+In order to connect to a Dolt database, you must add your database connectivity
+information. This is done using a [`.env` file](https://pub.dev/packages/flutter_dotenv).
+
+First create a new `.env` file in the root of this application. It must have the following
+fields:
+
+```shell
+DB_HOST="my.host.name"
+DB_PORT=3306
+DB_USER="root"
+DB_PASS="xxxxxxxxxxxxxxxxxx"
+DB_NAME="mydb"
+```
+
+Then when you run this application, you should see the database name and branches from
+your Dolt database populated on the home screen.
