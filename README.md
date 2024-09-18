@@ -5,6 +5,9 @@ Includes branch and pull request workflows.
 
 Learn more about this application in [this blog](https://www.dolthub.com/blog/2024-09-20-flutter-and-dolt).
 
+<img width="1526" alt="Screenshot 2024-09-18 at 3 15 15 PM" src="https://github.com/user-attachments/assets/c5a1cc0a-7c95-43c6-83f9-6672b76ddc71">
+
+
 ## Getting Started
 
 This project is a starting point for a Flutter - Dolt application.
