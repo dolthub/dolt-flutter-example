@@ -109,11 +109,6 @@ class DatabaseHelper {
         .toList();
   }
 
-  Future<void> deleteBranch(String name) async {
-    final conn = await connection;
-    await conn.execute('CALL DOLT_BRANCH("-d", "$name")');
-  }
-
   Future<void> createBranch(String name, String fromName) async {
     final conn = await connection;
     await conn.execute('CALL DOLT_BRANCH("$name", "$fromName")');
