@@ -1,4 +1,5 @@
 import 'package:dolt_flutter_example/models/dolt_log.dart';
+import 'package:dolt_flutter_example/util.dart';
 import 'package:flutter/material.dart';
 import 'package:dolt_flutter_example/database_helper.dart';
 import 'package:dolt_flutter_example/models/dolt_branch.dart';
@@ -29,19 +30,12 @@ class _PullViewState extends State<PullView> {
                 orElse: () => widget.branches.first)
             .name;
       });
-      getLogs(dropdownValue);
+      _getLogs(dropdownValue);
       super.initState();
     }
   }
 
-  handleError(dynamic error, String action) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Failed to $action: $error"),
-      backgroundColor: const Color.fromARGB(255, 235, 108, 108),
-    ));
-  }
-
-  getLogs(String? toBranch) {
+  _getLogs(String? toBranch) {
     if (toBranch == null) {
       return;
     }
@@ -50,11 +44,11 @@ class _PullViewState extends State<PullView> {
         logs = value;
       });
     }).catchError((error) {
-      handleError(error, "get logs");
+      handleError(context, error, "get logs");
     });
   }
 
-  mergePull() {
+  _mergePull() {
     db.mergeBranches(widget.fromBranch, dropdownValue).then((value) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -64,7 +58,7 @@ class _PullViewState extends State<PullView> {
       // Route back to home page
       Navigator.pop(context);
     }).catchError((error) {
-      handleError(error, "merge branches");
+      handleError(context, error, "merge branches");
     });
   }
 
@@ -102,7 +96,7 @@ class _PullViewState extends State<PullView> {
                       setState(() {
                         dropdownValue = value!;
                       });
-                      getLogs(value);
+                      _getLogs(value);
                     },
                     dropdownMenuEntries: widget.branches
                         .map<DropdownMenuEntry<String>>((BranchModel value) {
@@ -134,7 +128,7 @@ class _PullViewState extends State<PullView> {
                 style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
                         const Color.fromARGB(255, 193, 223, 255))),
-                onPressed: mergePull,
+                onPressed: _mergePull,
                 child: const Text('Merge branch'),
               ),
               const SizedBox(
