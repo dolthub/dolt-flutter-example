@@ -1,12 +1,11 @@
 # dolt_flutter_example
 
-An example Flutter application that connects to a [Dolt](https://www.doltdb.com) database.
+An example Flutter counter application that connects to a [Dolt](https://www.doltdb.com) database.
 Includes branch and pull request workflows.
 
 Learn more about this application in [this blog](https://www.dolthub.com/blog/2024-09-20-flutter-and-dolt).
 
-<img width="1526" alt="Screenshot 2024-09-18 at 3 15 15 PM" src="https://github.com/user-attachments/assets/c5a1cc0a-7c95-43c6-83f9-6672b76ddc71">
-
+<img width="1476" alt="Screenshot 2024-09-19 at 3 51 17 PM" src="https://github.com/user-attachments/assets/327cde26-a28c-4a59-9bea-6f2b32cdd11b">
 
 ## Getting Started
 
@@ -37,5 +36,5 @@ DB_PASS="xxxxxxxxxxxxxxxxxx"
 DB_NAME="mydb"
 ```
 
-Then when you run this application, you should see the database name and branches from
+Then when you run this application, you should see the counter and branches from
 your Dolt database populated on the home screen.
